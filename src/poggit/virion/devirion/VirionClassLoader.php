@@ -22,27 +22,28 @@ declare(strict_types=1);
 
 namespace poggit\virion\devirion;
 
-use BaseClassLoader;
-use Threaded;
+use pmmp\thread\ThreadSafeArray;
+use pocketmine\thread\ThreadSafeClassLoader;
 use function file_exists;
 use function str_replace;
 use function stripos;
 use const DIRECTORY_SEPARATOR;
 use const PHP_INT_SIZE;
 
-class VirionClassLoader extends BaseClassLoader{
-	private $messages;
+class VirionClassLoader extends ThreadSafeClassLoader{
+	/** @var ThreadSafeArray<string> */
+	private ThreadSafeArray $messages;
 
-	/** @var Threaded|string[] */
-	private $antigenMap;
-	/** @var Threaded|string[] */
-	private $mappedClasses;
+	/** @var ThreadSafeArray<string> */
+	private ThreadSafeArray $antigenMap;
+	/** @var ThreadSafeArray<string> */
+	private ThreadSafeArray $mappedClasses;
 
 	public function __construct(){
 		parent::__construct();
-		$this->messages = new Threaded;
-		$this->antigenMap = new Threaded;
-		$this->mappedClasses = new Threaded;
+		$this->messages = new ThreadSafeArray();
+		$this->antigenMap = new ThreadSafeArray();
+		$this->mappedClasses = new ThreadSafeArray();
 	}
 
 	public function addAntigen(string $antigen, string $path) : void{
@@ -57,7 +58,7 @@ class VirionClassLoader extends BaseClassLoader{
 		return $antigens;
 	}
 
-	public function findClass($class) : ?string{
+	public function findClass(string $class) : ?string{
 		$baseName = str_replace("\\", DIRECTORY_SEPARATOR, $class);
 		foreach($this->antigenMap as $path => $antigen){
 			if(stripos($class, $antigen) === 0){
@@ -83,10 +84,10 @@ class VirionClassLoader extends BaseClassLoader{
 		return null;
 	}
 
-	public function loadClass($name) : bool{
+	public function loadClass(string $name) : bool{
 		try{
 			return parent::loadClass($name);
-		}catch(\Exception $e){
+		}catch(\Exception){
 			return false;
 		}
 	}
@@ -95,7 +96,7 @@ class VirionClassLoader extends BaseClassLoader{
 		return $this->mappedClasses[$loadedClass] ?? null;
 	}
 
-	public function getMessages() : Threaded{
+	public function getMessages() : ThreadSafeArray{
 		return $this->messages;
 	}
 }
