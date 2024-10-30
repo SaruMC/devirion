@@ -29,7 +29,8 @@ jobs:
       - name: Get tag versions
         id: get-versions
         run: |
-            echo "${GITHUB_REF#refs/tags/}" | sed 's/-.*//' >> $GITHUB_OUTPUT
+            VERSION=$(echo "${GITHUB_REF#refs/tags/}" | sed 's/-.*//')
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Generate build info
         run: |
