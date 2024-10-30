@@ -7,7 +7,6 @@ on:
 jobs:
   draft:
     name: Create GitHub draft release
-    if: "startsWith(github.event.head_commit.message, 'release: ')"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -30,7 +29,7 @@ jobs:
       - name: Get tag versions
         id: get-versions
         run: |
-            echo "${GITHUB_REF#refs/tags/} | sed 's/-.*//'" >> $GITHUB_OUTPUT
+            echo "${GITHUB_REF#refs/tags/}" | sed 's/-.*//' >> $GITHUB_OUTPUT
 
       - name: Generate build info
         run: |
