@@ -24,7 +24,7 @@ jobs:
           echo "APP_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
 
       - name: Build .phar
-        run: php -dphar.readonly=0 build/make-phar.php ${{ env.APP_NAME }} ${{ github.sha }}
+        run: php -dphar.readonly=0 build/make-phar.php --out ${{ github.workspace }}/${{ env.APP_NAME }}.phar --git ${{ github.sha }} --build ${{ github.run_number }}
 
       - name: Get tag versions
         id: get-versions
@@ -40,7 +40,8 @@ jobs:
             ${{ github.repository }} \
             ${{ github.run_number }} \
             ${{ github.run_id }} \
-          > build_info.json    
+            ${{ env.APP_NAME }} \
+          > build_info.json
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
