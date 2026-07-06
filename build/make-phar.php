@@ -30,7 +30,7 @@ function createPhar(string $gitHash) : void {
 		$phar = new Phar(PHAR_FILE);
 		$phar->startBuffering();
 
-		$phar->setStub($phar->createDefaultStub('src/poggit/virion/devirion/DEVirion.php'));
+		$phar->setStub("<?php\n\n__HALT_COMPILER();\n");
 
 		addFilesToPhar($phar, SRC_DIR, "src/");
 		addFileToPhar($phar, PLUGIN_FILE, "plugin.yml");
