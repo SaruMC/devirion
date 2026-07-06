@@ -32,12 +32,13 @@ function preg_quote_array(array $strings, string $delim) : array{
 
 /**
  * @param string[] $includedPaths
+ * @param string[] $rootFiles     individual root-level files to add (e.g. plugin.yml)
  * @param mixed[]  $metadata
  * @phpstan-param array<string, mixed> $metadata
  *
  * @return \Generator|string[]
  */
-function buildPhar(string $pharPath, string $basePath, array $includedPaths, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1, ?int $compression = null){
+function buildPhar(string $pharPath, string $basePath, array $includedPaths, array $rootFiles, array $metadata, string $stub, int $signatureAlgo = \Phar::SHA1, ?int $compression = null){
 	$basePath = rtrim(str_replace("/", DIRECTORY_SEPARATOR, $basePath), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 	$includedPaths = array_map(function(string $path) : string{
 		return rtrim(str_replace("/", DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -91,6 +92,15 @@ function buildPhar(string $pharPath, string $basePath, array $includedPaths, arr
 	$count = count($phar->buildFromIterator($regexIterator, $basePath));
 	yield "Added $count files";
 
+	//Add individual root-level files
+	foreach($rootFiles as $file){
+		$fullPath = $basePath . $file;
+		if(file_exists($fullPath)){
+			$phar->addFile($fullPath, $file);
+			yield "Added root file: $file";
+		}
+	}
+
 	if($compression !== null){
 		yield "Compressing files...";
 		$phar->compressFiles($compression);
@@ -143,6 +153,7 @@ function main() : void{
 			'src',
 			'vendor'
 		],
+		['plugin.yml', 'cli.php'],
 		[
 			'git' => $gitHash,
 			'build' => $build
